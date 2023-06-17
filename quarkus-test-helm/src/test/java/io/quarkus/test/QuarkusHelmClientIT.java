@@ -9,10 +9,12 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.test.bootstrap.QuarkusHelmClient;
 import io.quarkus.test.scenarios.QuarkusScenario;
 import io.quarkus.test.scenarios.annotations.DisabledOnQuarkusVersion;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 @Tag("quarkus-helm")
 @QuarkusScenario
 @DisabledOnQuarkusVersion(version = "1\\..*", reason = "Quarkus Helm not supported")
+@EnabledIfEnvironmentVariable(named = "PATH", matches = ".*helm.*")
 public class QuarkusHelmClientIT {
 
     @Inject
