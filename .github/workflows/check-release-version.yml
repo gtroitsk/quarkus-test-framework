@@ -13,10 +13,14 @@ jobs:
           release=$(curl -sSL "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest" | jq -r .tag_name)
           release_subversion=$(echo "$release" | cut -d"." -f3,3)
           release_stage_number=$(echo "$release" | cut -d"." -f4,4 | grep -o '[0-9]'  || true)
+          echo $release_subversion
 
           next_version=$(grep -E 'current-version:\s*' .github/project.yml | awk '{print $2}')
           next_version_subversion=$(echo "$next_version" | cut -d"." -f3,3)
           next_version_stage_number=$(echo "$next_version" | cut -d"." -f4,4 | grep -o '[0-9]' || true)
+
+          $next_version_subversion
+          $next_version_stage_number 
 
           if ! [[ $release =~ .*Final$ ]]; then
             if [[ $next_version_subversion > $release_subversion ]]; then
