@@ -1,6 +1,9 @@
 name: Check release version
 on:
-  push:
+  pull_request:
+    types:
+      - opened
+      - synchronize
     paths:
       - .github/project.yml
 jobs:
