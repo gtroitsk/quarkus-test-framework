@@ -17,7 +17,7 @@ import io.quarkus.test.utils.AwaitilityUtils;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DevModeGreetingResourceIT {
 
-    static final String VICTOR_NAME = "victor";
+    static final String VICTOR_NAME = "vit`a";
 
     static final String HELLO_IN_ENGLISH = "Hello";
     static final String HELLO_IN_SPANISH = "Hola";
