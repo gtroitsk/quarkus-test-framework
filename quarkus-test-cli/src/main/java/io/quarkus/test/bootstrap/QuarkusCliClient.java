@@ -69,6 +69,10 @@ public class QuarkusCliClient {
         return runCli(servicePath, logOutput, cmd.toArray(new String[cmd.size()]));
     }
 
+    public Result runUpdate(Path serviceFolder) {
+        return runCliAndWait(serviceFolder, "update");
+    }
+
     public QuarkusCliRestService createApplication(String name) {
         return createApplication(name, CreateApplicationRequest.defaults());
     }
