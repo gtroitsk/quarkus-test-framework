@@ -14,8 +14,8 @@ jobs:
       - name: Check release version
         run: |
           releases=$(curl -sSL "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases")
-          
-          if [ "$GITHUB_REF" == "refs/heads/main" ]; then
+
+          if [[ "$GITHUB_BASE_REF" == "main" ]]; then
             latest_prerelease=$(echo "$releases" | jq -r '.[] | select(.prerelease) | .tag_name' | head -n 1)
             latest_prerelease_beta_number=$(echo "$latest_prerelease" | cut -d"." -f4,4 | grep -o '[0-9]\+' || true)
             
@@ -23,17 +23,23 @@ jobs:
             next_prerelease_minor_version=$(echo "$next_prerelease" | cut -d"." -f2,2)
             next_prerelease_patch_version=$(echo "$next_prerelease" | cut -d"." -f3,3)
             next_prerelease_beta_number=$(echo "$next_prerelease" | cut -d"." -f4,4 | grep -o '[0-9]\+' || true)
-          
+            
             current_release=$(curl -sSL "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest" | jq -r .tag_name)
             current_release_minor_version=$(echo "$current_release" | cut -d"." -f2,2)
-          
+            
+            echo "=============================================="
+            echo "Latest release: " $current_release
+            echo "Latest prerelease: " $latest_prerelease 
+            echo "[main] " $latest_prerelease "->" $next_prerelease
+            echo "=============================================="
+            
             # Check if can change minor version after creating new branch 
             if [[ $current_release_minor_version == $next_prerelease_minor_version ]]; then
               echo "Error: next LTS release branch is out, bump version to 1."$((next_prerelease_minor_version+1))".0.Beta1" 
               exit 1;
             fi
           
-            if [[ $(("$current_release_minor_version")) + 1 ! = $next_prerelease_minor_version ]]; then
+            if [[ $(("$current_release_minor_version" + 1)) != $next_prerelease_minor_version ]]; then
               echo "Error: pre-releases should have minor version one upper than last release"
               exit 1;
             fi
@@ -51,23 +57,23 @@ jobs:
               exit 1;
             fi
           else 
-            expected_release_version=$(echo "${GITHUB_REF##*/}" | sed 's/z/0/')
+            expected_release_version=$(echo "$GITHUB_BASE_REF" | sed 's/z/0/')
           
             first_release_tag_exists=$(echo "$releases" | jq -r '.[] | .tag_name' | grep "^$expected_release_version$")
             next_release=$(grep -E 'current-version:\s*' .github/project.yml | awk '{print $2}')
           
-            if [ -z "$first_release_tag_exists" ] && [ "$next_release" != "$expected_release_version" ]; then
+            if [ -z "$first_release_tag_exists" ] && [[ "$next_release" != "$expected_release_version" ]]; then
               echo "Error: wrong tag name for the first release in new branch"
               exit 1
             fi
             
-            branch_version=$(echo "${GITHUB_REF##*/}" | cut -d. -f1,2")
+            branch_version=$(echo "$GITHUB_BASE_REF" | cut -d. -f1,2)
             latest_branch_tag_patch_version=$(echo "$releases" | jq -r --arg version "$branch_version" '
               .[] 
               | select(.tag_name | contains($version)) 
               | .tag_name' | grep -v "Beta" | head -1 | cut -d. -f3)
               
-            branch_minor_version=$(echo "$GITHUB_REF" | awk -F'[/.]' '{print $4}')
+            branch_minor_version=$(echo "$GITHUB_BASE_REF" | cut -d. -f2,2)
             next_release_minor_version=$(echo "$next_release" | cut -d"." -f2,2)
             next_release_patch_version=$(echo "$next_release" | cut -d"." -f3,3)
           
