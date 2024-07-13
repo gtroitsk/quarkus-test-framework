@@ -58,13 +58,23 @@ jobs:
             fi
           else 
             expected_release_version=$(echo "$GITHUB_BASE_REF" | sed 's/z/0/')
-          
-            first_release_tag_exists=$(echo "$releases" | jq -r '.[] | .tag_name' | grep "^$expected_release_version$")
+            
+            first_release_tag_exists=$(echo "$releases" | jq -r '.[] | .tag_name' | grep "^$expected_release_version$" || true)
             next_release=$(grep -E 'current-version:\s*' .github/project.yml | awk '{print $2}')
           
-            if [ -z "$first_release_tag_exists" ] && [[ "$next_release" != "$expected_release_version" ]]; then
-              echo "Error: wrong tag name for the first release in new branch"
-              exit 1
+            echo "=============================================="
+            echo "Expected_release_version: " $expected_release_version
+            echo "First 1.x.0 tag exists: " $first_release_tag_exists
+            echo "[" $GITHUB_BASE_REF "]" Project.yaml version: $next_release
+            echo "=============================================="
+            
+            if [ -z "$first_release_tag_exists" ]; then
+              if [[ "$next_release" != "$expected_release_version" ]]; then
+                echo "Error: wrong tag name for the first release in new branch"
+                exit 1;
+              else
+                exit 0;
+              fi
             fi
             
             branch_version=$(echo "$GITHUB_BASE_REF" | cut -d. -f1,2)
