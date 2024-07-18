@@ -54,6 +54,10 @@ jobs:
               exit 1;
             fi
           
+            echo "==================================="
+            cat .github/project.yml
+            echo "==================================="
+            
             project_current_base=$(echo "$next_prerelease" | grep -oP '^.*Beta')
             project_next_version=$(grep -E 'next-version:\s*' .github/project.yml | awk '{print $2}')
             project_next_base=$(echo "$project_next_version" | grep -oP '^.*Beta')
