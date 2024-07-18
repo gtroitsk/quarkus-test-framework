@@ -115,15 +115,15 @@ jobs:
               echo "Error: release patch versions should be bumped one by one as sequence"
               exit 1;
             fi
-          fi
           
-          project_next_version=$(grep -E 'next-version:\s*' .github/project.yml | awk '{print $2}')
-          project_next_base=$(echo "$project_next_version" | cut -d"." -f1,2)
-          
-          project_current_patch_version="$next_release_patch_version"
-          project_next_patch_version=$(echo "$project_next_version" | awk -F. '{print $3}')
-          
-          if [[ "$branch_version" != "$project_next_base" ]] || [[ $(("$project_current_patch_version" + 1)) != "$project_next_patch_version" ]]; then
-            echo "The next-version in project.yaml is not valid. Patch version of the next release must be one upper than the latest"
-            exit 1;
+            project_next_version=$(grep -E 'next-version:\s*' .github/project.yml | awk '{print $2}')
+            project_next_base=$(echo "$project_next_version" | cut -d"." -f1,2)
+            
+            project_current_patch_version="$next_release_patch_version"
+            project_next_patch_version=$(echo "$project_next_version" | awk -F. '{print $3}')
+            
+            if [[ "$branch_version" != "$project_next_base" ]] || [[ $(("$project_current_patch_version" + 1)) != "$project_next_patch_version" ]]; then
+              echo "The next-version in project.yaml is not valid. Patch version of the next release must be one upper than the latest"
+              exit 1;
+            fi
           fi
