@@ -69,7 +69,7 @@ jobs:
             echo "$project_current_beta_number"
             project_next_beta_number=$(echo "$project_next_version" | grep -oP 'Beta\K[0-9]+')
             echo "$project_next_beta_number"
-          
+         
           
             if [[ "$project_current_base" != "$project_next_base" ]] || [[ $(("$project_current_beta_number" + 1)) != "$project_next_beta_number" ]]; then
               echo "The next-version in project.yaml is not valid. Next pre-release Beta version must be one upper that current"
@@ -105,7 +105,7 @@ jobs:
               echo "Releases cannot consist any qualifier after version"
               exit 1;
             fi
-          
+
             if [[ "$branch_minor_version" != "$next_release_minor_version" ]]; then
               echo "Error: minor versions cannot be changed"
               exit 1;
