@@ -59,11 +59,17 @@ jobs:
             echo "==================================="
             
             project_current_base=$(echo "$next_prerelease" | grep -oP '^.*Beta')
+            echo "$project_current_base"
             project_next_version=$(grep -E 'next-version:\s*' .github/project.yml | awk '{print $2}')
+            echo "$project_next_version"
             project_next_base=$(echo "$project_next_version" | grep -oP '^.*Beta')
-          
+            echo "$project_next_base"
+            
             project_current_beta_number="$next_prerelease_beta_number"
+            echo "$project_current_beta_number"
             project_next_beta_number=$(echo "$project_next_version" | grep -oP 'Beta\K[0-9]+')
+            echo "$project_next_beta_number"
+          
           
             if [[ "$project_current_base" != "$project_next_base" ]] || [[ $(("$project_current_beta_number" + 1)) != "$project_next_beta_number" ]]; then
               echo "The next-version in project.yaml is not valid. Next pre-release Beta version must be one upper that current"
