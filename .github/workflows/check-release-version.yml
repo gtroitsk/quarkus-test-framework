@@ -15,6 +15,8 @@ jobs:
         run: |
           releases=$(curl -sSL "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases")
           
+          cat .github/project.yml
+          
           branch_version=$(echo "$GITHUB_BASE_REF" | cut -d. -f1,2)
           latest_released_patch_version=$(echo "$releases" | jq -r --arg version "$branch_version" '
           .[]
