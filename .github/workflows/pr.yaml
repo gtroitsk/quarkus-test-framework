@@ -23,7 +23,9 @@ jobs:
           cache: 'maven'
       - name: Build with Maven
         run: |
-          mvn -V -B -s .github/mvn-settings.xml clean install -Pframework,examples -Dvalidate-format -DskipTests -DskipITs
+          mvn -V -B -s .github/mvn-settings.xml clean install -Pframework,examples -Dvalidate-format -DskipTests -DskipITs | tee step1.log
+          wc -l step1.log
+          du -h step1.log
       - name: Tar Maven Repo
         shell: bash
         run: tar -I 'pigz -9' -cf maven-repo-current-fw.tgz -C ~ .m2/repository
@@ -55,7 +57,9 @@ jobs:
           cache: 'maven'
       - name: Build Quarkus main
         run: |
-          git clone https://github.com/quarkusio/quarkus.git && cd quarkus && ./mvnw -B -s .github/mvn-settings.xml clean install -Dquickly -Dno-test-modules -Prelocations
+          git clone https://github.com/quarkusio/quarkus.git && cd quarkus && ./mvnw -B -s .github/mvn-settings.xml clean install -Dquickly -Dno-test-modules -Prelocations  | tee step2.log
+          wc -l step2.log
+          du -h step2.log
       - name: Tar Maven Repo
         shell: bash
         run: tar -I 'pigz -9' -cf maven-repo.tgz -C ~ .m2/repository
@@ -96,7 +100,9 @@ jobs:
         run: tar -xzf maven-repo-current-fw.tgz -C ~
       - name: Build in JVM mode
         run: |
-          mvn -B -fae -s .github/mvn-settings.xml clean install -Pexamples
+          mvn -B -fae -s .github/mvn-settings.xml clean install -Pexamples  | tee step3.log
+          wc -l step3.log
+          du -h step3.log
       - name: Detect flaky tests
         id: flaky-test-detector
         shell: bash
@@ -141,7 +147,9 @@ jobs:
         run: tar -xzf maven-repo.tgz -C ~
       - name: Build Quarkus CLI
         run: |
-          git clone https://github.com/quarkusio/quarkus.git && cd quarkus/devtools/cli && mvn -B -s ../../../.github/mvn-settings.xml clean install -Dquickly -Dno-test-modules -Prelocations
+          git clone https://github.com/quarkusio/quarkus.git && cd quarkus/devtools/cli && mvn -B -s ../../../.github/mvn-settings.xml clean install -Dquickly -Dno-test-modules -Prelocations  | tee step4.log
+          wc -l step4.log
+          du -h step4.log
       - name: Install Quarkus CLI
         run: |
           cat <<EOF > ./quarkus-dev-cli
@@ -152,7 +160,9 @@ jobs:
           ./quarkus-dev-cli version
       - name: Build in JVM mode
         run: |
-          mvn -B -fae -s .github/mvn-settings.xml clean install -Pframework,examples -Drun-cli-tests -Dts.quarkus.cli.cmd="${PWD}/quarkus-dev-cli" -Dquarkus.platform.version="${{ matrix.quarkus-version }}"
+          mvn -B -fae -s .github/mvn-settings.xml clean install -Pframework,examples -Drun-cli-tests -Dts.quarkus.cli.cmd="${PWD}/quarkus-dev-cli" -Dquarkus.platform.version="${{ matrix.quarkus-version }}"  | tee step5.log
+          wc -l step5.log
+          du -h step5.log
       - name: Detect flaky tests
         id: flaky-test-detector
         shell: bash
@@ -201,7 +211,9 @@ jobs:
         run: tar -xzf maven-repo-current-fw.tgz -C ~
       - name: Build
         run: |
-          mvn -B -fae -s .github/mvn-settings.xml clean install -Pexamples,native -pl '${{ matrix.examples }}'
+          mvn -B -fae -s .github/mvn-settings.xml clean install -Pexamples,native -pl '${{ matrix.examples }}'  | tee step6.log
+          wc -l step6.log
+          du -h step6.log
       - name: Detect flaky tests
         id: flaky-test-detector
         shell: bash
