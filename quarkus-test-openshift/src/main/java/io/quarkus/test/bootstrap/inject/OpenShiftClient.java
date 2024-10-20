@@ -57,12 +57,14 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodStatus;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.NamespaceListVisitFromServerGetDeleteRecreateWaitApplicable;
 import io.fabric8.kubernetes.client.dsl.NonDeletingOperation;
 import io.fabric8.kubernetes.client.dsl.PodResource;
@@ -376,6 +378,30 @@ public final class OpenShiftClient {
                     .runAndWait();
         } catch (Exception e) {
             fail("Service failed to be scaled. Caused by " + e.getMessage());
+        }
+    }
+
+    // TODO: add check to other resources
+    public void checkImagePullStatus(Service service) {
+        try {
+            while (true) {
+                Pod pod = client.pods().withLabel(LABEL_TO_WATCH_FOR_LOGS, service.getName()).list().getItems().get(0);
+                if (pod == null) {
+                    LOG.error("Pod not found");
+                    break;
+                }
+
+                PodStatus status = pod.getStatus();
+                if (status.getContainerStatuses() != null && !status.getContainerStatuses().isEmpty()) {
+                    boolean imagePulled = status.getContainerStatuses().get(0).getState().getWaiting() == null;
+                    if (imagePulled) {
+                        LOG.info("Image successfully pulled.");
+                        break;
+                    }
+                }
+                Thread.sleep(5000);
+            }
+        } catch (InterruptedException | KubernetesClientException ignored) {
         }
     }
 

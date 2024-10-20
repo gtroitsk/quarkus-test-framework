@@ -72,6 +72,12 @@ public abstract class OpenShiftQuarkusApplicationManagedResource<T extends Quark
 
         client.scaleTo(model.getContext().getOwner(), 1);
 
+        //        long startTime = System.currentTimeMillis();
+        //        long waitTime = 6 * 60 * 1000;
+        //        while (System.currentTimeMillis() - startTime < waitTime) {}
+
+        client.checkImagePullStatus(model.getContext().getOwner());
+
         running = true;
 
         loggingHandler = new OpenShiftLoggingHandler(model.getContext());
