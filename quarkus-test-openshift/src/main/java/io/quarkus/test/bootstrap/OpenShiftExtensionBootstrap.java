@@ -74,6 +74,9 @@ public class OpenShiftExtensionBootstrap implements ExtensionBootstrap {
             printStatus(context);
             printEvents(context);
             printPodLogs(context);
+            printPodLogsExt(context);
+            printImageStreamLog(context);
+            describePodsLog(context);
         }
     }
 
@@ -83,6 +86,18 @@ public class OpenShiftExtensionBootstrap implements ExtensionBootstrap {
 
     private void printStatus(ScenarioContext context) {
         FileUtils.copyContentTo(client.getStatus(), logsTestFolder(context).resolve("status" + Log.LOG_SUFFIX));
+    }
+
+    private void printPodLogsExt(ScenarioContext context) {
+        FileUtils.copyContentTo(client.getPodsLog(), logsTestFolder(context).resolve("extpods" + Log.LOG_SUFFIX));
+    }
+
+    private void printImageStreamLog(ScenarioContext context) {
+        FileUtils.copyContentTo(client.getImageStreamsLog(), logsTestFolder(context).resolve("imagestream" + Log.LOG_SUFFIX));
+    }
+
+    private void describePodsLog(ScenarioContext context) {
+        FileUtils.copyContentTo(client.describePods(), logsTestFolder(context).resolve("descpods" + Log.LOG_SUFFIX));
     }
 
     private void printPodLogs(ScenarioContext context) {

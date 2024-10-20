@@ -34,11 +34,12 @@ import io.quarkus.test.utils.TestExecutionProperties;
 public class BaseService<T extends Service> implements Service {
 
     public static final String SERVICE_STARTUP_TIMEOUT = "startup.timeout";
-    public static final Duration SERVICE_STARTUP_TIMEOUT_DEFAULT = Duration.ofMinutes(5);
+    public static final Duration SERVICE_STARTUP_TIMEOUT_DEFAULT = Duration.ofMinutes(7);
     public static final String DELETE_FOLDER_ON_EXIT = "delete.folder.on.exit";
 
     private static final String SERVICE_STARTUP_CHECK_POLL_INTERVAL = "startup.check-poll-interval";
     private static final Duration SERVICE_STARTUP_CHECK_POLL_INTERVAL_DEFAULT = Duration.ofSeconds(2);
+    private static final long SEC_CONST = 1000;
 
     protected ServiceContext context;
     private final ServiceLoader<ServiceListener> listeners = ServiceLoader.load(ServiceListener.class);
@@ -243,9 +244,12 @@ public class BaseService<T extends Service> implements Service {
         Log.debug(this, "Starting service (%s)", getDisplayName());
         onPreStartActions.forEach(a -> a.handle(this));
         doStart();
+        long startTime = System.currentTimeMillis();
         waitUntilServiceIsStarted();
         onPostStartActions.forEach(a -> a.handle(this));
-        Log.info(this, "Service started (%s)", getDisplayName());
+        long endTime = System.currentTimeMillis();
+        long duration = (endTime - startTime) / SEC_CONST;
+        Log.info(this, "Service started (%s) in %d seconds", getDisplayName(), duration);
     }
 
     /**

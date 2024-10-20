@@ -102,7 +102,7 @@ public final class OpenShiftClient {
     private static final Logger LOG = Logger.getLogger(OpenShiftClient.class);
     private static final String IMAGE_STREAM_TIMEOUT = "imagestream.install.timeout";
     private static final String OPERATOR_INSTALL_TIMEOUT = "operator.install.timeout";
-    private static final Duration TIMEOUT_DEFAULT = Duration.ofMinutes(5);
+    private static final Duration TIMEOUT_DEFAULT = Duration.ofMinutes(7);
     private static final int PROJECT_NAME_SIZE = 10;
     private static final int PROJECT_CREATION_RETRIES = 5;
     private static final int SPECS_SECRET_NAME_LIMIT = 63;
@@ -379,6 +379,30 @@ public final class OpenShiftClient {
         }
     }
 
+    // TODO: add check to other resources
+    //    public void checkImagePullStatus(Service service) {
+    //        try {
+    //            while (true) {
+    //                Pod pod = client.pods().withLabel(LABEL_TO_WATCH_FOR_LOGS, service.getName()).list().getItems().get(0);
+    //                if (pod == null) {
+    //                    LOG.error("Pod not found");
+    //                    break;
+    //                }
+    //
+    //                PodStatus status = pod.getStatus();
+    //                if (status.getContainerStatuses() != null && !status.getContainerStatuses().isEmpty()) {
+    //                    boolean imagePulled = status.getContainerStatuses().get(0).getState().getWaiting() == null;
+    //                    if (imagePulled) {
+    //                        LOG.info("Image successfully pulled.");
+    //                        break;
+    //                    }
+    //                }
+    //                Thread.sleep(TIMEOUT_DEFAULT);
+    //            }
+    //        } catch (InterruptedException | KubernetesClientException ignored) {
+    //        }
+    //    }
+
     /**
      * Waits until the Build Config finishes.
      *
@@ -653,6 +677,68 @@ public final class OpenShiftClient {
         }
 
         return output.stream().collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    public String getPodsLog() {
+        List<String> output = new ArrayList<>();
+        try {
+            new Command(OC, "get", "pods", "-n", currentNamespace, "--loglevel=10").outputToLines(output).runAndWait();
+        } catch (Exception ex) {
+            Log.warn("Failed to get pod logs", ex);
+        }
+
+        return output.stream().collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    public String getImageStreamsLog() {
+        List<String> output = new ArrayList<>();
+        try {
+            new Command(OC, "get", "imagestream", "-n", currentNamespace).outputToLines(output).runAndWait();
+        } catch (Exception ex) {
+            Log.warn("Failed to get imagestream logs", ex);
+        }
+
+        return output.stream().collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    public String describePods() {
+        List<String> output = new ArrayList<>();
+        var pods = client.pods().inNamespace(currentNamespace).list();
+
+        if (pods != null && !pods.getItems().isEmpty()) {
+            for (var pod : pods.getItems()) {
+                if (pod != null && pod.getStatus() != null) {
+                    var statuses = pod.getStatus().getContainerStatuses();
+                    if (statuses != null && !statuses.isEmpty()) {
+                        for (var status : statuses) {
+                            String stateDescription = "Unknown state";
+
+                            // Check the current state of the container (waiting, running, terminated)
+                            if (status.getState() != null) {
+                                if (status.getState().getRunning() != null) {
+                                    stateDescription = "Running";
+                                } else if (status.getState().getWaiting() != null) {
+                                    stateDescription = "Waiting: " + status.getState().getWaiting().getReason();
+                                } else if (status.getState().getTerminated() != null) {
+                                    stateDescription = "Terminated: Exit Code "
+                                            + status.getState().getTerminated().getExitCode();
+                                }
+                            }
+
+                            output.add("Pod: " + pod.getMetadata().getName() + " - State: " + stateDescription);
+                        }
+                    } else {
+                        output.add("Pod: " + pod.getMetadata().getName() + " - No container statuses available");
+                    }
+                } else {
+                    output.add("Pod details are missing or incomplete.");
+                }
+            }
+        } else {
+            output.add("No pods found in the namespace.");
+        }
+
+        return String.join(System.lineSeparator(), output);
     }
 
     /**
