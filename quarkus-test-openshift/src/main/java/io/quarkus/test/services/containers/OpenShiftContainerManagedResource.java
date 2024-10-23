@@ -52,7 +52,7 @@ public class OpenShiftContainerManagedResource implements ManagedResource {
         exposeService();
 
         client.scaleTo(model.getContext().getOwner(), 1);
-        client.checkImagePullStatus(model.getContext().getOwner());
+        // client.checkImagePullStatus(model.getContext().getOwner());
         running = true;
 
         loggingHandler = new OpenShiftLoggingHandler(model.getContext());

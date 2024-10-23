@@ -57,14 +57,12 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodStatus;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.NamespaceListVisitFromServerGetDeleteRecreateWaitApplicable;
 import io.fabric8.kubernetes.client.dsl.NonDeletingOperation;
 import io.fabric8.kubernetes.client.dsl.PodResource;
@@ -104,7 +102,7 @@ public final class OpenShiftClient {
     private static final Logger LOG = Logger.getLogger(OpenShiftClient.class);
     private static final String IMAGE_STREAM_TIMEOUT = "imagestream.install.timeout";
     private static final String OPERATOR_INSTALL_TIMEOUT = "operator.install.timeout";
-    private static final Duration TIMEOUT_DEFAULT = Duration.ofMinutes(5);
+    private static final Duration TIMEOUT_DEFAULT = Duration.ofMinutes(7);
     private static final int PROJECT_NAME_SIZE = 10;
     private static final int PROJECT_CREATION_RETRIES = 5;
     private static final int SPECS_SECRET_NAME_LIMIT = 63;
@@ -382,28 +380,28 @@ public final class OpenShiftClient {
     }
 
     // TODO: add check to other resources
-    public void checkImagePullStatus(Service service) {
-        try {
-            while (true) {
-                Pod pod = client.pods().withLabel(LABEL_TO_WATCH_FOR_LOGS, service.getName()).list().getItems().get(0);
-                if (pod == null) {
-                    LOG.error("Pod not found");
-                    break;
-                }
-
-                PodStatus status = pod.getStatus();
-                if (status.getContainerStatuses() != null && !status.getContainerStatuses().isEmpty()) {
-                    boolean imagePulled = status.getContainerStatuses().get(0).getState().getWaiting() == null;
-                    if (imagePulled) {
-                        LOG.info("Image successfully pulled.");
-                        break;
-                    }
-                }
-                Thread.sleep(5000);
-            }
-        } catch (InterruptedException | KubernetesClientException ignored) {
-        }
-    }
+    //    public void checkImagePullStatus(Service service) {
+    //        try {
+    //            while (true) {
+    //                Pod pod = client.pods().withLabel(LABEL_TO_WATCH_FOR_LOGS, service.getName()).list().getItems().get(0);
+    //                if (pod == null) {
+    //                    LOG.error("Pod not found");
+    //                    break;
+    //                }
+    //
+    //                PodStatus status = pod.getStatus();
+    //                if (status.getContainerStatuses() != null && !status.getContainerStatuses().isEmpty()) {
+    //                    boolean imagePulled = status.getContainerStatuses().get(0).getState().getWaiting() == null;
+    //                    if (imagePulled) {
+    //                        LOG.info("Image successfully pulled.");
+    //                        break;
+    //                    }
+    //                }
+    //                Thread.sleep(TIMEOUT_DEFAULT);
+    //            }
+    //        } catch (InterruptedException | KubernetesClientException ignored) {
+    //        }
+    //    }
 
     /**
      * Waits until the Build Config finishes.
@@ -676,6 +674,28 @@ public final class OpenShiftClient {
             new Command(OC, "status", "--suggest", "-n", currentNamespace).outputToLines(output).runAndWait();
         } catch (Exception ex) {
             Log.warn("Failed to get project status", ex);
+        }
+
+        return output.stream().collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    public String getPodsLog() {
+        List<String> output = new ArrayList<>();
+        try {
+            new Command(OC, "get", "pods", "-n", currentNamespace, "--loglevel=10").outputToLines(output).runAndWait();
+        } catch (Exception ex) {
+            Log.warn("Failed to get pod logs", ex);
+        }
+
+        return output.stream().collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    public String getImageStreamsLog() {
+        List<String> output = new ArrayList<>();
+        try {
+            new Command(OC, "get", "imagestream", "-n", currentNamespace).outputToLines(output).runAndWait();
+        } catch (Exception ex) {
+            Log.warn("Failed to get imagestream logs", ex);
         }
 
         return output.stream().collect(Collectors.joining(System.lineSeparator()));
