@@ -78,7 +78,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - quarkus-version: "999-SNAPSHOT"
+          - quarkus-version: "3.22.2"
             java: 17
             extra-maven-args: ''
           - quarkus-version: "999-SNAPSHOT"
