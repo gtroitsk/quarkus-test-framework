@@ -78,9 +78,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - quarkus-version: "3.22.2"
+          - quarkus-version: "3.22.3"
             java: 17
-            extra-maven-args: ''
+            extra-maven-args: '-pl examples/pingpong/greetings -Dit.test=KubernetesRemoteDevModeGreetingResourceIT'
           - quarkus-version: "999-SNAPSHOT"
             java: 21 # test 'quarkus-container-image-jib' with Java 21 as it should use 'openjdk-21-runtime' instead
             extra-maven-args: '-pl examples/pingpong/'
