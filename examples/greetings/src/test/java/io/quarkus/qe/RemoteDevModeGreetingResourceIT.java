@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.bootstrap.DevModeQuarkusService;
 import io.quarkus.test.scenarios.QuarkusScenario;
-import io.quarkus.test.services.RemoteDevModeQuarkusApplication;
+import io.quarkus.test.services.DevModeQuarkusApplication;
 import io.quarkus.test.utils.AwaitilityUtils;
 
 @QuarkusScenario
@@ -18,7 +18,7 @@ public class RemoteDevModeGreetingResourceIT {
     static final String HELLO_IN_ENGLISH = "Hello";
     static final String HELLO_IN_SPANISH = "Hola";
 
-    @RemoteDevModeQuarkusApplication
+    @DevModeQuarkusApplication
     static final DevModeQuarkusService app = new DevModeQuarkusService();
 
     @Test
