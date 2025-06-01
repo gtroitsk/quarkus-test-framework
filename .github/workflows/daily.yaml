@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - quarkus-version: "3.22.3"
+          - quarkus-version: "3.23.0.CR1"
             java: 17
             extra-maven-args: '-pl examples/greetings -Dit.test=KubernetesRemoteDevModeGreetingResourceIT'
           - quarkus-version: "999-SNAPSHOT"
