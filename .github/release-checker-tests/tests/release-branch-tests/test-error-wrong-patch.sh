@@ -3,6 +3,7 @@ set -e
 
 export GITHUB_BASE_REF="1.6.z"
 
+
 cp release-checker-tests/mocks/release-branch/project-release-current-version-wrong-patch.yml project.yml
 export RELEASES_JSON=$(cat release-checker-tests/data/release-branch/releases.json)
 export LATEST_JSON=$(cat release-checker-tests/data/release-branch/latest.json)
